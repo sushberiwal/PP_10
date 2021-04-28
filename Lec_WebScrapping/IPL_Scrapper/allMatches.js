@@ -12,6 +12,7 @@ function processData(html){
     // get liks of all the matchess !!!
     let ch = cheerio.load(html);
     let allATags = ch('a[data-hover="Scorecard"]');
+    // { {} , {} , {} , {} , {} , {} , {} , {} }
     for(let i=0 ; i<allATags.length ; i++){
         let matchLink = "https://www.espncricinfo.com"+ch(allATags[i]).attr("href");
         console.log(matchLink);
@@ -19,5 +20,5 @@ function processData(html){
 }
 
 
-
+// node js feature
 module.exports = getAllMatches;

@@ -54,8 +54,12 @@ function checkBatsmanFile(teamName , batsmanName){
 function updateBatsmanFile(teamName , batsmanName , runs , balls , fours , sixes){
     let batsmanFilePath = `./IPL/${teamName}/${batsmanName}.json`;
     let batsmanFile = fs.readFileSync(batsmanFilePath);
+    // JSON Stringified form
+    
     // Stringified JSON Object => normal javascript syntax
     batsmanFile = JSON.parse(batsmanFile);
+
+
     let inning = {
         Runs : runs ,
         Balls : balls ,

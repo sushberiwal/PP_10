@@ -19,6 +19,8 @@
   "homepage": "https://github.com/sushberiwal/PP_10#readme",
   "dependencies": {
     "cheerio": "*",
+    "json2xls": "^0.1.2",
+    "node-xlsx": "^0.16.1",
     "request": "^2.88.2"
   }
 }

@@ -2,14 +2,18 @@ const cheerio = require("cheerio");
 const request = require("request");
 const fs = require("fs");
 
-request( "https://www.espncricinfo.com/series/ipl-2020-21-1210595/delhi-capitals-vs-mumbai-indians-final-1237181/full-scorecard" , function(err , response , data){
-    processData(data);
-})
+
+function getMatchDetails(link){
+    request( link , function(err , response , data){
+        processData(data);
+    })
+}
 
 function processData(html){
     let ch = cheerio.load(html);
     // get team names of both the teams !!!
     let bothInnings = ch('.Collapsible');
+    // fs.writeFileSync("./bothInnings.html" , bothInnings+""); => just to create a html file
     // {  <div class="Collapsible"> </div> , <div class="Collapsible"> </div>   };
     for(let i=0 ; i<bothInnings.length ; i++){
         let teamName = ch(bothInnings[i]).find("h5").text();
@@ -29,9 +33,76 @@ function processData(html){
                 let fours = ch(allTds[5]).text().trim();
                 let sixes = ch(allTds[6]).text().trim();
 
-                console.log(`Batsman = ${batsmanName} Runs = ${runs} Balls = ${balls} Fours = ${fours} Sixes = ${sixes}`);
+                // console.log(`Batsman = ${batsmanName} Runs = ${runs} Balls = ${balls} Fours = ${fours} Sixes = ${sixes}`);
+                processDetails(teamName , batsmanName , runs , balls , fours , sixes);
             }
         }
-        console.log("###################################");
+    }
+    console.log("#############################");
+}
+
+function checkTeamFolder(teamName){
+    // "./IPL/Mumbai Indians";
+    let teamPath = `./IPL/${teamName}`;
+    return fs.existsSync(teamPath);
+}
+function checkBatsmanFile(teamName , batsmanName){
+    // "./IPL/CSK/MSDHONI.json"
+    let batsmanPath = `./IPL/${teamName}/${batsmanName}.json`;
+    return fs.existsSync(batsmanPath);
+}
+function updateBatsmanFile(teamName , batsmanName , runs , balls , fours , sixes){
+    let batsmanFilePath = `./IPL/${teamName}/${batsmanName}.json`;
+    let batsmanFile = fs.readFileSync(batsmanFilePath);
+    // Stringified JSON Object => normal javascript syntax
+    batsmanFile = JSON.parse(batsmanFile);
+    let inning = {
+        Runs : runs ,
+        Balls : balls ,
+        Fours : fours ,
+        Sixes : sixes
+    }
+    batsmanFile.push(inning);
+    fs.writeFileSync(batsmanFilePath , JSON.stringify(batsmanFile));
+}
+
+function createBatsmanFile(teamName , batsmanName , runs , balls , fours , sixes){
+    let batsmanFilePath = `./IPL/${teamName}/${batsmanName}.json`;
+    let batsmanFile = [];
+    let inning = {
+        Runs : runs ,
+        Balls : balls ,
+        Fours : fours ,
+        Sixes : sixes
+    }
+    batsmanFile.push(inning);
+    
+    fs.writeFileSync(batsmanFilePath ,  JSON.stringify(batsmanFile) );
+}
+
+function createTeamFolder(teamName){
+    let teamPath = `./IPL/${teamName}`;
+    fs.mkdirSync(teamPath);
+}
+
+function processDetails(teamName , batsmanName , runs , balls , fours , sixes){
+    let teamFolderExist = checkTeamFolder(teamName);
+    if(teamFolderExist){
+        let batsmanFileExist = checkBatsmanFile(teamName , batsmanName );
+        if(batsmanFileExist){
+            updateBatsmanFile(teamName , batsmanName , runs , balls , fours , sixes);
+        }
+        else{
+            createBatsmanFile(teamName , batsmanName , runs , balls , fours , sixes);
+        }
+    }
+    else{
+        createTeamFolder(teamName);
+        createBatsmanFile(teamName , batsmanName , runs , balls , fours , sixes);
     }
 }
+
+
+
+
+module.exports = getMatchDetails;
